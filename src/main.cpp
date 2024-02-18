@@ -10,9 +10,10 @@
 #define TARGET_FPS 60
 
 void BallInitialize() {
-    Ball[0] = 390;
-    Ball[1] = 230;
-    Ball[2] = 90;
+    Ball[0] = 390; // x position
+    Ball[1] = 230; // y position
+    Ball[2] = 0; // angle
+    Ball[3] = 3.0; //speed
 }
 
 bool isYOutsideScreen(int y, int height) {
@@ -61,7 +62,7 @@ int main(int argc, char *argv[])
     while(running) {
         int starttick = SDL_GetTicks();
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 32, 32, 54, 255);
         SDL_RenderClear(renderer);
 
         //Inputs
@@ -102,9 +103,9 @@ int main(int argc, char *argv[])
         //Bot
         SDL_Rect *bot = new SDL_Rect{750, Bot.y, 10, 100};
 
-        if (Ball[1] < Bot.y + 10) {
+        if (Ball[1] < Bot.y + 20) {
             Bot.velocity = 4;
-        } else if (Ball[1] > Bot.y + 90) {
+        } else if (Ball[1] > Bot.y + 80) {
             Bot.velocity = -4;
         } else {
             Bot.velocity = 0;
@@ -116,19 +117,28 @@ int main(int argc, char *argv[])
         
         //Ball
         SDL_Rect *ball = new SDL_Rect{int(Ball[0]), int(Ball[1]), 10, 10};
-        if(SDL_HasIntersection(player, ball) || SDL_HasIntersection(bot, ball)) {
-            Ball[2] += 170;
-        }
-        else if(isYOutsideScreen(Ball[1], 10)) {
-            Ball[2] += 45;
-        }
-        else if(isXOutsideScreen(Ball[0], 10)) {
-            BallInitialize();
+
+        // Check collision with top and bottom of the window
+        if (isYOutsideScreen(Ball[1], 10)) { // 10 is the ball's height
+            Ball[2] *= -1;
         }
 
-        Ball[0] += SDL_sinf(Ball[2] * (M_PI / 180)) * 4;
-        Ball[1] += SDL_cosf(Ball[2] * (M_PI / 180)) * 4;
+        if (isXOutsideScreen(Ball[0], 10)) {
+            BallInitialize(); // rip Ball
+        }
 
+        if (SDL_HasIntersection(ball, player)) {
+            Ball[3] += 0.3;
+            Ball[2] += 180 - (((Player.y + 50) - Ball[1]) * 0.4f);
+        }
+
+        if (SDL_HasIntersection(ball, bot)) {
+            Ball[3] += 0.3;
+            Ball[2] += 180 - (((Bot.y + 50) - Ball[1]) * 0.4f);
+        }
+
+        Ball[0] += Ball[3] * SDL_cosf(Ball[2] * (M_PI / 180));
+        Ball[1] += Ball[3] * SDL_sinf(Ball[2] * (M_PI / 180));
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
