@@ -3,5 +3,5 @@ struct Paddle {
     int velocity = 0;
 };
 
-float Ball[3];
+float Ball[4];
 bool Ball_Bounced = false;
